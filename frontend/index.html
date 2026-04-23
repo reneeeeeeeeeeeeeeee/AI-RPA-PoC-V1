@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ERP Assistant</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%); color: #18212b;
+  height: 100vh; display: flex; flex-direction: column;
+}
+.topbar {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 20px; background: rgba(255,255,255,0.92);
+  border-bottom: 1px solid #dde5ef; flex-shrink: 0; backdrop-filter: blur(10px);
+}
+.topbar-title { font-size: 14px; font-weight: 600; flex: 1; letter-spacing: 0.01em; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; background: #93a1b2; transition: background .3s, box-shadow .3s; }
+.status-dot.active { background: #ff9f43; box-shadow: 0 0 0 4px rgba(255,159,67,.18); animation: pulse 1s infinite; }
+.status-dot.done   { background: #3b82f6; box-shadow: 0 0 0 4px rgba(59,130,246,.14); }
+.status-label { font-size: 12px; color: #738295; }
+.btn-reset {
+  font-size: 11px; padding: 4px 10px; border-radius: 6px;
+  border: 1px solid #d7e0ea; background: #eef3f9;
+  color: #607286; cursor: pointer;
+}
+.btn-reset:hover { background: #e5edf6; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
+
+.model-bar {
+  display: flex; gap: 6px; padding: 6px 18px;
+  background: rgba(255,255,255,0.88); border-bottom: 1px solid #dde5ef; flex-wrap: wrap; backdrop-filter: blur(10px);
+}
+.pill {
+  font-size: 11px; padding: 2px 10px; border-radius: 99px;
+  border: 1px solid #d9e2ec; color: #7b8a9a; background: #f7faff;
+  transition: all .2s;
+}
+.pill.active { background: #e8f1ff; border-color: #7fb1ff; color: #1d4f91; font-weight: 600; }
+
+.chat-area {
+  flex: 1; overflow-y: auto; padding: 20px;
+  display: flex; flex-direction: column; gap: 14px;
+}
+
+.msg { display: flex; gap: 10px; align-items: flex-start; }
+.msg.user { flex-direction: row-reverse; }
+.avatar {
+  width: 30px; height: 30px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 600; flex-shrink: 0;
+}
+.av-user { background: #ffe7d6; color: #9a4d10; }
+.av-sys  { background: #e6eef8; color: #22476f; }
+.av-cog  { background: #fff1cc; color: #8a5a00; }
+
+.bubble {
+  max-width: 78%; padding: 9px 13px; border-radius: 12px;
+  font-size: 13px; line-height: 1.6; border: 1px solid #dbe4ee;
+  background: rgba(255,255,255,0.96); white-space: pre-wrap; word-break: break-word; box-shadow: 0 10px 24px rgba(15,23,42,.04);
+}
+.msg.user .bubble { background: #eef4fb; border-color: #bfd3e7; color: #1c3853; }
+.bubble-meta { font-size: 11px; color: #8d9bab; margin-top: 4px; }
+.msg.user .bubble-meta { text-align: right; }
+
+/* Screenshot inline */
+.screenshot-wrap {
+  margin-top: 8px; border-radius: 8px; overflow: hidden;
+  border: 1px solid #e5e5e2; cursor: pointer;
+  max-width: 100%;
+}
+.screenshot-wrap img { width: 100%; display: block; }
+.screenshot-label {
+  font-size: 10px; color: #7d8b9a; padding: 4px 7px;
+  background: #f4f8fd; border-top: 1px solid #dde5ef;
+}
+
+/* Action badge */
+.action-badge {
+  display: inline-block; font-size: 11px; padding: 2px 8px;
+  border-radius: 99px; margin-bottom: 5px; font-weight: 500;
+}
+.badge-click  { background: #e8f1ff; color: #1d4f91; }
+.badge-type   { background: #ffe7d6; color: #9a4d10; }
+.badge-scroll { background: #fff1cc; color: #8a5a00; }
+.badge-key    { background: #eef2f7; color: #485569; }
+.badge-ok     { background: #e8f1ff; color: #1d4f91; }
+.badge-err    { background: #fdecec; color: #b42318; }
+
+/* Thinking indicator */
+.thinking {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px; color: #7f8b99; padding: 4px 0;
+}
+.dots span {
+  display: inline-block; width: 5px; height: 5px; border-radius: 50%;
+  background: #afbccb; animation: bounce .8s infinite;
+}
+.dots span:nth-child(2) { animation-delay: .15s; }
+.dots span:nth-child(3) { animation-delay: .3s; }
+@keyframes bounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-5px)} }
+
+/* Confirm buttons */
+.confirm-btns { display: flex; gap: 8px; margin-top: 8px; }
+.btn-yes { font-size: 12px; padding: 6px 14px; border-radius: 8px; border: 1px solid #7fb1ff; background: #e8f1ff; color: #1d4f91; cursor: pointer; font-weight: 600; }
+.btn-no  { font-size: 12px; padding: 6px 14px; border-radius: 8px; border: 1px solid #d7e0ea; background: #eef3f9; color: #607286; cursor: pointer; }
+
+/* Progress */
+.prog-block { background: #f7faff; border: 1px solid #dde5ef; border-radius: 10px; padding: 8px 10px; margin-top: 6px; font-size: 12px; }
+.prog-row { display: flex; align-items: center; gap: 7px; padding: 3px 0; color: #4d5c6b; }
+.picon { width: 15px; height: 15px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 600; flex-shrink: 0; }
+.picon.done { background: #e8f1ff; color: #1d4f91; }
+.picon.spin { background: #fff1cc; color: #8a5a00; animation: pulse 1s infinite; }
+.picon.err  { background: #FCEBEB; color: #A32D2D; }
+
+/* Input */
+.input-area { padding: 14px 20px; background: rgba(255,255,255,0.94); border-top: 1px solid #dde5ef; flex-shrink: 0; backdrop-filter: blur(10px); }
+.file-prev { display: none; align-items: center; gap: 8px; font-size: 12px; color: #4d5c6b; background: #f4f8fd; border: 1px solid #dde5ef; border-radius: 10px; padding: 6px 10px; margin-bottom: 8px; }
+.file-prev.show { display: flex; }
+.file-prev-x { margin-left: auto; cursor: pointer; color: #7f8b99; font-size: 16px; background: none; border: none; }
+.input-row { display: flex; gap: 7px; }
+.input-row input { flex: 1; font-size: 13px; padding: 10px 14px; border-radius: 10px; border: 1px solid #d4dee9; background: #f9fbfe; color: #18212b; outline: none; }
+.input-row input:focus { border-color: #7fb1ff; box-shadow: 0 0 0 4px rgba(127,177,255,.15); }
+.btn-attach { padding: 9px 12px; border-radius: 10px; border: 1px solid #d7e0ea; background: #eef3f9; cursor: pointer; color: #607286; }
+.btn-send { padding: 9px 16px; border-radius: 10px; border: 1px solid #6aa2ff; background: #2f7df6; color: #ffffff; font-weight: 600; font-size: 13px; cursor: pointer; box-shadow: 0 10px 18px rgba(47,125,246,.18); }
+.btn-send:hover { background: #236ee2; }
+.hint { font-size: 11px; color: #8391a1; margin-top: 6px; }
+#file-input { display: none; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="status-dot" id="sdot"></div>
+  <div class="topbar-title">ERP Assistant · ERP</div>
+  <button class="btn-reset" onclick="resetHistory()">Clear history</button>
+  <div class="status-label" id="slabel">ready</div>
+</div>
+
+<div class="model-bar">
+  <span class="pill" id="p-orch">Planner</span>
+  <span class="pill" id="p-excel">Excel parser</span>
+  <span class="pill" id="p-cog">UI AI</span>
+  <span class="pill" id="p-exec">Action Engine</span>
+</div>
+
+<div class="chat-area" id="chat"></div>
+
+<div class="input-area">
+  <div class="file-prev" id="fp">
+    <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="2" y="1" width="10" height="13" rx="2" fill="#639922" opacity=".25" stroke="#3B6D11" stroke-width="1.2"/><path d="M5 5h6M5 8h6M5 11h4" stroke="#3B6D11" stroke-width="1" stroke-linecap="round"/></svg>
+    <span id="fp-name">—</span>
+    <button class="file-prev-x" onclick="removeFile()">×</button>
+  </div>
+  <div class="input-row">
+    <button class="btn-attach" onclick="document.getElementById('file-input').click()" title="Attach Excel">
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M13 7L7.5 12.5a3.5 3.5 0 01-5-5l6-6a2 2 0 013 3L6 10a1 1 0 01-1.5-1.5L10 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <input type="file" id="file-input" accept=".xlsx,.xls" onchange="handleFile(event)">
+    <input type="text" id="msg" placeholder="Type a task or prompt in English…" onkeydown="if(event.key==='Enter')send()">
+    <button class="btn-send" onclick="send()">Send</button>
+  </div>
+  <div class="hint">Examples: &nbsp; click on Customers &nbsp;·&nbsp; scroll down &nbsp;·&nbsp; type 'Mustermann GmbH' into the company field &nbsp;·&nbsp; click Save</div>
+</div>
+
+<script>
+let ws = null, pendingFile = null, pendingJobId = null, thinkingEl = null, progBlock = null;
+
+function connectWS() {
+  ws = new WebSocket("ws://localhost:8000/ws");
+  ws.onopen  = () => setStatus("done", "connected");
+  ws.onclose = () => { setStatus("", "disconnected"); setTimeout(connectWS, 3000); };
+  ws.onmessage = e => handle(JSON.parse(e.data));
+}
+
+function handle(msg) {
+  removeThinking();
+  if      (msg.type === "status")          setModelStatus(msg);
+  else if (msg.type === "assistant")       addBot(msg.text, msg.model, "av-sys");
+  else if (msg.type === "cogagent_result") addCogResult(msg);
+  else if (msg.type === "thinking")        addThinking(msg.text);
+  else if (msg.type === "confirm")         addConfirm(msg.text, msg.job_id);
+  else if (msg.type === "progress")        updateProgress(msg);
+  else if (msg.type === "progress_done")   addProgRow(msg.text, "done");
+  else if (msg.type === "progress_error")  addProgRow(msg.text, "err");
+  else if (msg.type === "system")          addSystem(msg.text);
+}
+
+function setStatus(state, label) {
+  document.getElementById("sdot").className = "status-dot " + state;
+  document.getElementById("slabel").textContent = label;
+}
+
+function setModelStatus(msg) {
+  const map = { orchestrator:"p-orch", "excel-parser":"p-excel", cogagent:"p-cog", executor:"p-exec" };
+  Object.values(map).forEach(id => document.getElementById(id).className = "pill");
+  if (msg.model !== "all" && msg.state === "active") {
+    const el = document.getElementById(map[msg.model] || "");
+    if (el) el.className = "pill active";
+    setStatus("active", {orchestrator:"Planning...", "excel-parser":"Reading Excel...",
+      cogagent:"UI AI acting...", executor:"Running actions..."}[msg.model] || msg.model);
+  } else {
+    setStatus("done", "ready");
+  }
+}
+
+function addUser(text, fname) {
+  const d = document.createElement("div");
+  d.className = "msg user";
+  d.innerHTML = `
+    <div class="avatar av-user">YOU</div>
+    <div>
+      ${fname ? `<div style="font-size:11px;color:#aaa;margin-bottom:3px">📎 ${fname}</div>` : ""}
+      <div class="bubble">${esc(text)}</div>
+      <div class="bubble-meta">${now()}</div>
+    </div>`;
+  chat().appendChild(d); scroll();
+}
+
+function addBot(text, model, avClass) {
+  avClass = avClass || "av-sys";
+  const d = document.createElement("div");
+  d.className = "msg";
+  d.innerHTML = `
+    <div class="avatar ${avClass}">${avClass === "av-cog" ? "CA" : "AI"}</div>
+    <div>
+      <div class="bubble">${esc(text)}</div>
+      <div class="bubble-meta">${model || "assistant"} · ${now()}</div>
+    </div>`;
+  chat().appendChild(d); scroll();
+}
+
+function addCogResult(msg) {
+  const action  = msg.action || "unknown";
+  const badges  = {click:"badge-click",type:"badge-type",scroll:"badge-scroll",key:"badge-key"};
+  const badgeClass = badges[action] || "badge-ok";
+
+  const d = document.createElement("div");
+  d.className = "msg";
+  d.innerHTML = `
+    <div class="avatar av-cog">CA</div>
+    <div style="max-width:78%">
+      <span class="action-badge ${badgeClass}">${action.toUpperCase()}</span>
+      <div class="bubble">${esc(msg.text)}</div>
+      ${msg.screenshot ? `
+        <div class="screenshot-wrap" onclick="this.querySelector('img').style.maxHeight=this.querySelector('img').style.maxHeight?'':'none'">
+          <img src="data:image/png;base64,${msg.screenshot}" style="max-height:220px;object-fit:cover;object-position:top">
+          <div class="screenshot-label">Screen after action · click to expand</div>
+        </div>` : ""}
+      <div class="bubble-meta">UI AI · ${now()}</div>
+    </div>`;
+  chat().appendChild(d); scroll();
+}
+
+function addThinking(text) {
+  thinkingEl = document.createElement("div");
+  thinkingEl.className = "thinking";
+  thinkingEl.innerHTML = `<div class="dots"><span></span><span></span><span></span></div><span>${esc(text||"UI AI is thinking...")}</span>`;
+  chat().appendChild(thinkingEl); scroll();
+}
+function removeThinking() {
+  if (thinkingEl) { thinkingEl.remove(); thinkingEl = null; }
+}
+
+function addSystem(text) {
+  const d = document.createElement("div");
+  d.style.cssText = "text-align:center;font-size:11px;color:#bbb;padding:3px 0";
+  d.textContent = text;
+  chat().appendChild(d); scroll();
+}
+
+function addConfirm(text, jobId) {
+  pendingJobId = jobId;
+  const d = document.createElement("div");
+  d.className = "msg";
+  d.innerHTML = `
+    <div class="avatar av-sys">AI</div>
+    <div>
+      <div class="bubble">${esc(text)}
+        <div class="confirm-btns">
+          <button class="btn-yes" onclick="confirmStart()">Start ▶</button>
+          <button class="btn-no"  onclick="ws.send(JSON.stringify({type:'abort'}))">Cancel</button>
+        </div>
+      </div>
+      <div class="bubble-meta">orchestrator · ${now()}</div>
+    </div>`;
+  chat().appendChild(d); scroll();
+}
+
+let progEl = null;
+function updateProgress(msg) {
+  if (!progEl) {
+    const d = document.createElement("div");
+    d.className = "msg";
+    d.innerHTML = `<div class="avatar av-cog">CA</div><div><div class="bubble"><div class="prog-block" id="pb"></div></div><div class="bubble-meta">executing · ${now()}</div></div>`;
+    chat().appendChild(d);
+    progEl = document.getElementById("pb");
+  }
+  document.getElementById("prog-active")?.remove();
+  const row = document.createElement("div");
+  row.className = "prog-row"; row.id = "prog-active";
+  row.innerHTML = `<div class="picon spin">…</div><span>${esc(msg.text)} (${msg.current}/${msg.total})</span>`;
+  progEl.appendChild(row); scroll();
+}
+function addProgRow(text, state) {
+  document.getElementById("prog-active")?.remove();
+  if (!progEl) return;
+  const row = document.createElement("div");
+  row.className = "prog-row";
+  row.innerHTML = `<div class="picon ${state}">${state==="done"?"✓":"!"}</div><span>${esc(text)}</span>`;
+  progEl.appendChild(row); scroll();
+}
+
+async function send() {
+  const inp  = document.getElementById("msg");
+  const text = inp.value.trim();
+  if (!text) return;
+  inp.value = "";
+
+  addUser(text, pendingFile?.name);
+  addThinking();
+
+  if (pendingFile) {
+    const fd = new FormData();
+    fd.append("file", pendingFile);
+    const r = await fetch("/upload", {method:"POST", body:fd});
+    const d = await r.json();
+    ws.send(JSON.stringify({type:"chat", text, file_path: d.file_path}));
+    removeFile();
+  } else {
+    ws.send(JSON.stringify({type:"chat", text}));
+  }
+  progEl = null;
+}
+
+function confirmStart() {
+  if (!pendingJobId) return;
+  ws.send(JSON.stringify({type:"confirm_start", job_id: pendingJobId}));
+  addSystem("Execution started...");
+  progEl = null;
+}
+
+function resetHistory() {
+  ws.send(JSON.stringify({type:"reset_history"}));
+  session_history_local = [];
+}
+
+function handleFile(e) {
+  const f = e.target.files[0];
+  if (!f) return;
+  pendingFile = f;
+  document.getElementById("fp-name").textContent = f.name;
+  document.getElementById("fp").className = "file-prev show";
+}
+function removeFile() {
+  pendingFile = null;
+  document.getElementById("file-input").value = "";
+  document.getElementById("fp").className = "file-prev";
+}
+
+function chat()  { return document.getElementById("chat"); }
+function scroll(){ chat().scrollTop = chat().scrollHeight; }
+function now()   { return new Date().toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"}); }
+function esc(s)  { return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\n/g,"<br>"); }
+
+connectWS();
+setTimeout(() => addBot(
+  "Hello! I'm your ERP assistant.\n\nYou can type commands directly in English and I will execute them on screen:\n\n• click on Customers\n• scroll down\n• type 'Mustermann GmbH' into the company field\n• click the Save button\n\nOr attach an Excel file to transfer data automatically.\n\nUse 'Clear history' to reset the action context.",
+  "assistant"
+), 400);
+</script>
+</body>
+</html>

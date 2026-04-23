@@ -1,0 +1,91 @@
+<svg width="100%" viewBox="0 0 710 620" role="img" xmlns="http://www.w3.org/2000/svg">
+  <title>Architecture for ERP Workflow Automation</title>
+  <desc>Local architecture combining Planning Module and Visual AI for ERP automation</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <mask id="text-mask" maskUnits="userSpaceOnUse">
+      <rect x="0" y="0" width="710" height="620" fill="white"/>
+      <rect x="285" y="31" width="110" height="22" fill="black" rx="2"/>
+      <rect x="283" y="50" width="114" height="20" fill="black" rx="2"/>
+      <rect x="275" y="117" width="130" height="22" fill="black" rx="2"/>
+      <rect x="145" y="140" width="390" height="20" fill="black" rx="2"/>
+      <rect x="288" y="211" width="104" height="22" fill="black" rx="2"/>
+      <rect x="235" y="230" width="210" height="20" fill="black" rx="2"/>
+      <rect x="250" y="299" width="180" height="22" fill="black" rx="2"/>
+      <rect x="187" y="320" width="305" height="20" fill="black" rx="2"/>
+      <rect x="295" y="393" width="90" height="22" fill="black" rx="2"/>
+      <rect x="247" y="412" width="186" height="20" fill="black" rx="2"/>
+      <rect x="516" y="216" width="104" height="20" fill="black" rx="2"/>
+      <rect x="270" y="479" width="139" height="22" fill="black" rx="2"/>
+      <rect x="236" y="498" width="207" height="20" fill="black" rx="2"/>
+      <rect x="226" y="566" width="228" height="20" fill="black" rx="2"/>
+    </mask>
+  </defs>
+
+  <!-- 1. User Input: #FFD700 Goldgelb -->
+  <g onclick="sendPrompt('What should the user input look like for an ERP workflow?')" style="font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;">
+    <rect x="260" y="20" width="160" height="52" rx="8" style="fill:#FFFAE0;stroke:#FFD700;stroke-width:2px;"/>
+    <text x="340" y="42" text-anchor="middle" dominant-baseline="central" style="fill:#6B5000;font-size:14px;font-weight:600;">User Input</text>
+    <text x="340" y="60" text-anchor="middle" dominant-baseline="central" style="fill:#997000;font-size:12px;">natural language</text>
+  </g>
+
+  <!-- Arrow down -->
+  <line x1="340" y1="72" x2="340" y2="105" marker-end="url(#arrow)" style="stroke:#AAAAAA;stroke-width:1.5px;fill:none;"/>
+
+  <!-- 2. Planungsmodul: #FFB343 Amber -->
+  <g onclick="sendPrompt('How does the Planning Module work in the ERP workflow?')" style="font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;">
+    <rect x="170" y="105" width="340" height="64" rx="8" style="fill:#FFF3D6;stroke:#FFB343;stroke-width:2px;"/>
+    <text x="340" y="128" text-anchor="middle" dominant-baseline="central" style="fill:#7A4A00;font-size:14px;font-weight:600;">Planning Module (local)</text>
+    <text x="340" y="150" text-anchor="middle" dominant-baseline="central" style="fill:#B37200;font-size:12px;">LLM-based · plans steps · manages state</text>
+  </g>
+
+  <!-- Arrow down -->
+  <line x1="340" y1="169" x2="340" y2="202" marker-end="url(#arrow)" style="stroke:#AAAAAA;stroke-width:1.5px;fill:none;"/>
+
+  <!-- 3. Task Queue: #FF7E42 Orange -->
+  <g onclick="sendPrompt('How should the Planning Module structure workflow steps?')" style="font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;">
+    <rect x="200" y="202" width="280" height="52" rx="8" style="fill:#FFE8DC;stroke:#FF7E42;stroke-width:2px;"/>
+    <text x="340" y="222" text-anchor="middle" dominant-baseline="central" style="fill:#7A2800;font-size:14px;font-weight:600;">Task Queue</text>
+    <text x="340" y="240" text-anchor="middle" dominant-baseline="central" style="fill:#CC4A10;font-size:12px;">Step 1 → Step 2 → … → Step N</text>
+  </g>
+
+  <!-- Arrow down -->
+  <line x1="340" y1="254" x2="340" y2="287" marker-end="url(#arrow)" style="stroke:#AAAAAA;stroke-width:1.5px;fill:none;"/>
+
+  <!-- 4. Visuelle KI: #FF5C8A Koralle-Pink -->
+  <g onclick="sendPrompt('How does the Visual AI work as a GUI executor in ERP?')" style="font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;">
+    <rect x="170" y="287" width="340" height="64" rx="8" style="fill:#FFE0EC;stroke:#FF5C8A;stroke-width:2px;"/>
+    <text x="340" y="310" text-anchor="middle" dominant-baseline="central" style="fill:#8A0030;font-size:14px;font-weight:600;">Visual AI (local, GPU)</text>
+    <text x="340" y="330" text-anchor="middle" dominant-baseline="central" style="fill:#CC2060;font-size:12px;">trained visual model · clicks, types, navigates</text>
+  </g>
+
+  <!-- Arrow down -->
+  <line x1="340" y1="351" x2="340" y2="384" marker-end="url(#arrow)" style="stroke:#AAAAAA;stroke-width:1.5px;fill:none;"/>
+
+  <!-- 5. Target System: #42EAFF Cyan -->
+  <g onclick="sendPrompt('Which systems can be automated with Visual AI?')" style="font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;">
+    <rect x="200" y="384" width="280" height="52" rx="8" style="fill:#D6FAFF;stroke:#42EAFF;stroke-width:2px;"/>
+    <text x="340" y="404" text-anchor="middle" dominant-baseline="central" style="fill:#004D5E;font-size:14px;font-weight:600;">Target System</text>
+    <text x="340" y="422" text-anchor="middle" dominant-baseline="central" style="fill:#007A8A;font-size:12px;">potentially any ERP, CRM or desktop system</text>
+  </g>
+
+  <!-- Feedback arrow right: Visuelle KI → Planungsmodul -->
+  <path d="M510 319 L580 319 L580 137 L510 137" fill="none" stroke-dasharray="5 3" marker-end="url(#arrow)" mask="url(#text-mask)" style="stroke:#AAAAAA;stroke-width:1.5px;stroke-dasharray:5px,3px;fill:none;"/>
+  <text x="593" y="228" text-anchor="middle" dominant-baseline="central" transform="rotate(-90, 593, 228)" style="fill:#888;font-size:11px;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;">Result / Status</text>
+
+  <!-- Arrow Target System → Human -->
+  <line x1="340" y1="436" x2="340" y2="469" marker-end="url(#arrow)" style="stroke:#AAAAAA;stroke-width:1.5px;fill:none;"/>
+
+  <!-- 6. Human-in-the-Loop: #4272FF Blau -->
+  <g onclick="sendPrompt('Where in the ERP workflow should a human intervene?')" style="font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;">
+    <rect x="200" y="470" width="280" height="52" rx="8" style="fill:#E0E8FF;stroke:#4272FF;stroke-width:2px;"/>
+    <text x="340" y="490" text-anchor="middle" dominant-baseline="central" style="fill:#1230AA;font-size:14px;font-weight:600;">Human-in-the-Loop</text>
+    <text x="340" y="508" text-anchor="middle" dominant-baseline="central" style="fill:#2A50DD;font-size:12px;">Approval · Errors · Exceptions</text>
+  </g>
+
+  <!-- Arrow Human back to Planungsmodul (left loop) -->
+  <path d="M200 496 L80 496 L80 137 L170 137" fill="none" stroke-dasharray="4 3" marker-end="url(#arrow)" style="stroke:#AAAAAA;stroke-width:1.5px;stroke-dasharray:4px,3px;fill:none;"/>
+
+</svg>
